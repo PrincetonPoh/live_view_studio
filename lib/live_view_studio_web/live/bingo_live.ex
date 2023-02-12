@@ -2,13 +2,11 @@ defmodule LiveViewStudioWeb.BingoLive do
   use LiveViewStudioWeb, :live_view
 
   def mount(_params, _session, socket) do
-    socket =
-      assign(socket,
-        number: nil,
-        numbers: all_numbers()
-      )
+    if connected?(socket) do
+      :timer.send_interval(3000, self(), :tick)
+    end
 
-    {:ok, socket}
+    {:ok, assign_socket(socket)}
   end
 
   def render(assigns) do
@@ -17,6 +15,9 @@ defmodule LiveViewStudioWeb.BingoLive do
     <div id="bingo">
       <div class="number">
         <%= @number %>
+      </div>
+      <div class="numbers">
+        <%= @numbers %>
       </div>
     </div>
     """
@@ -45,5 +46,16 @@ defmodule LiveViewStudioWeb.BingoLive do
       Enum.map(numbers, &"#{letter} #{&1}")
     end)
     |> Enum.shuffle()
+  end
+
+  defp assign_socket(socket) do
+    assign(socket,
+      number: nil,
+      numbers: all_numbers()
+    )
+  end
+
+  def handle_info(:tick, socket) do
+    {:noreply, assign_socket(socket)}
   end
 end
