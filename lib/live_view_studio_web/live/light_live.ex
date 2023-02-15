@@ -96,7 +96,7 @@ defmodule LiveViewStudioWeb.LightLive do
 
   def handle_event("slider", params, socket) do
     %{"brightness" => brightness} = params
-    socket = assign(socket, brightness: brightness)
+    socket = assign(socket, brightness: String.to_integer(brightness))
     {:noreply, socket}
   end
 
