@@ -9,6 +9,8 @@ defmodule LiveViewStudio.Flights do
   # end
 
   def search_by_airport(airport) do
+    :timer.sleep(1000)
+
     Enum.filter(list_flights(), fn flight ->
       String.starts_with?(flight.origin, String.upcase(airport)) ||
         String.starts_with?(flight.destination, String.upcase(airport))

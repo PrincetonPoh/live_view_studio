@@ -16,46 +16,79 @@ defmodule LiveViewStudioWeb.BoatsLive do
   def render(assigns) do
     ~H"""
     <h1>Daily Boat Rentals</h1>
+
+    <.promo expiration={2} minutes={1222}>
+      Save 25% on rentals!
+      <:legal>
+        <Heroicons.exclamation_circle /> Limit 1 per party
+      </:legal>
+    </.promo>
+
+    <.badge label="edited" class="bg-blue-300 font-bold" />
+
     <div id="boats">
-      <form phx-change="filter">
-        <div class="filters">
-          <select name="type">
-            <%= Phoenix.HTML.Form.options_for_select(
-              type_options(),
-              @filter.type
-            ) %>
-          </select>
-          <div class="prices">
-            <%= for price <- ["$", "$$", "$$$"] do %>
-              <input
-                type="checkbox"
-                name="prices[]"
-                value={price}
-                id={price}
-                checked={price in @filter.prices}
-              />
-              <label for={price}><%= price %></label>
-            <% end %>
-            <input type="hidden" name="prices[]" value="" />
-          </div>
-        </div>
-      </form>
+      <.filter_form filter={@filter} />
       <div class="boats">
-        <div :for={boat <- @boats} class="boat">
-          <img src={boat.image} />
-          <div class="content">
-            <div class="model">
-              <%= boat.model %>
-            </div>
-            <div class="details">
-              <span class="price">
-                <%= boat.price %>
-              </span>
-              <span class="type">
-                <%= boat.type %>
-              </span>
-            </div>
-          </div>
+        <.display_boats :for={boat <- @boats} boat={boat} />
+      </div>
+
+      <.promo expiration={1}>
+        Hurry, only 3 boats left!
+        <:legal>
+          Excluding weekends!
+        </:legal>
+      </.promo>
+    </div>
+    """
+  end
+
+  attr :filter, :map, required: true
+
+  def filter_form(assigns) do
+    ~H"""
+    <form phx-change="filter">
+      <div class="filters">
+        <select name="type">
+          <%= Phoenix.HTML.Form.options_for_select(
+            type_options(),
+            @filter.type
+          ) %>
+        </select>
+        <div class="prices">
+          <%= for price <- ["$", "$$", "$$$"] do %>
+            <input
+              type="checkbox"
+              name="prices[]"
+              value={price}
+              id={price}
+              checked={price in @filter.prices}
+            />
+            <label for={price}><%= price %></label>
+          <% end %>
+          <input type="hidden" name="prices[]" value="" />
+        </div>
+      </div>
+    </form>
+    """
+  end
+
+  attr :boat, LiveViewStudio.Boats
+
+  def display_boats(assigns) do
+    ~H"""
+    <div class="boat">
+      <img src={@boat.image} />
+      <div class="content">
+        <div class="model">
+          <%= @boat.model %>
+        </div>
+        <div class="details">
+          <span class="price">
+            <%= @boat.price %>
+          </span>
+          <span class="type">
+            <%= @boat.type %>
+          </span>
         </div>
       </div>
     </div>
