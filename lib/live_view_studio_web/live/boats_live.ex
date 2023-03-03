@@ -42,7 +42,7 @@ defmodule LiveViewStudioWeb.BoatsLive do
     """
   end
 
-  attr :filter, :map, required: true
+  attr(:filter, :map, required: true)
 
   def filter_form(assigns) do
     ~H"""
@@ -72,7 +72,7 @@ defmodule LiveViewStudioWeb.BoatsLive do
     """
   end
 
-  attr :boat, LiveViewStudio.Boats
+  attr(:boat, LiveViewStudio.Boats)
 
   def display_boats(assigns) do
     ~H"""
@@ -108,6 +108,12 @@ defmodule LiveViewStudioWeb.BoatsLive do
     filter = %{type: type, prices: prices}
     boats = Boats.list_boats(filter)
     socket = assign(socket, boats: boats, filter: filter)
+    {:noreply, socket}
+  end
+
+  def handle_params(params, _url, socket) do
+    IO.inspect(params["sort_by"])
+
     {:noreply, socket}
   end
 end

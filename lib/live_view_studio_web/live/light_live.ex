@@ -15,6 +15,7 @@ defmodule LiveViewStudioWeb.LightLive do
   def render(assigns) do
     ~H"""
     <h1>Front Porch Light</h1>
+
     <div id="light">
       <div class="meter">
         <span style={"width: #{@brightness}%; background: #{temp_color(@temp)}"}>
@@ -65,6 +66,33 @@ defmodule LiveViewStudioWeb.LightLive do
         </div>
       </form>
     </div>
+
+    <%!-- flashes --%>
+    <div id="flash" class="hidden bg-emerald-400 w-41 h-10" phx-mounted={JS.show(transition: "bg-rose-100 0.5s ease")}>  Welcome back!  </div>
+    <div id="status" class="hidden" phx-disconnected={JS.show()} phx-connected={JS.hide()}>  Attempting to reconnect...  </div>
+    <p class="alert" phx-click="lv:clear-flash" phx-value-key="info">  <%= live_flash(@flash, :info) %>  </p>
+    <%!-- phx events --%>
+    <h1 phx-click="inc" phx-value-myvar1="val1" phx-value-myvar2="val2">Yomana</h1>
+    <h1 phx-click="inc" phx-value-myvar2="val2">Yomana2</h1>
+    <input name="email" phx-focus="myfocus" phx-blur="myblur" phx-keydown="Escape"/>
+    <div id="thermostat" phx-window-keyup="update_temp">
+      Current temperature: <%= @brightness %>
+    </div>
+    <%!-- Live navigation --%>
+    <.link navigate={~p"/boats"}>LINK TO BOATS</.link>
+    <%!-- JS commands --%>
+    <div id="modal" class="modal bg-[#50d71e] w-40 h-10">  My Modal  </div>
+    <button phx-click={JS.show(to: "#modal", transition: "fade-in")}>  show modal  </button>
+    <button phx-click={JS.hide(to: "#modal", transition: "fade-out")}>  hide modal  </button>
+    <button phx-click={JS.toggle(to: "#modal", in: "fade-in", out: "fade-out")}>  toggle modal  </button>
+
+    <div id="modal" class="modal bg-rose-400 w-40 h-10">  Another modal  </div>
+    <button phx-click={JS.add_class("show", to: "#modal", transition: "fade-in")}>  show modal   </button>
+    <button phx-click={JS.remove_class("show", to: "#modal", transition: "fade-out")}>  hide modal   </button>
+
+    <div id="modal" class="modal bg-slate-400 w-40 h-10">  My Modal  </div>
+    <button phx-click={JS.push("modal-closed") |> JS.remove_class("show", to: "#modal", transition: "fade-out")}>  hide modal  </button>
+
     """
   end
 
@@ -110,4 +138,48 @@ defmodule LiveViewStudioWeb.LightLive do
   defp temp_color("3000"), do: "#F1C40D"
   defp temp_color("4000"), do: "#FEFF66"
   defp temp_color("5000"), do: "#99CCFF"
+
+  def handle_event("inc", params, socket) do
+    IO.puts("hey")
+    IO.inspect(params)
+
+    case params do
+      %{"myvar1" => "val1"} -> IO.puts("first one")
+      %{"myvar2" => "val2"} -> IO.puts("second one")
+      _ -> socket
+    end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("myfocus", _, socket) do
+    IO.puts("FOCUS")
+    {:noreply, socket}
+  end
+
+  def handle_event("myblur", _, socket) do
+    IO.puts("BLUR")
+    {:noreply, socket}
+  end
+
+  def handle_event("Escape", params, socket) do
+    IO.puts("esc")
+    IO.inspect(params)
+    {:noreply, socket}
+  end
+
+  def handle_event("update_temp", %{"key" => "ArrowUp"}, socket) do
+    IO.puts("up")
+    socket = update(socket, :brightness, &min(&1 + 1, 100))
+    {:noreply, socket}
+  end
+
+  def handle_event("update_temp", %{"key" => "ArrowDown"}, socket) do
+    IO.puts("down")
+    {:noreply, assign(socket, brightness: max(socket.assigns.brightness - 1, 0))}
+  end
+
+  def handle_event("update_temp", _, socket) do
+    {:noreply, socket}
+  end
 end
