@@ -62,7 +62,7 @@ defmodule LiveViewStudioWeb.ServersLive do
     {:noreply, update(socket, :coffees, &(&1 + 1))}
   end
 
-  attr :selected_server, :any, required: true
+  attr :selected_server, LiveViewStudio.Servers.Server, required: true
 
   def server(assigns) do
     ~H"""
