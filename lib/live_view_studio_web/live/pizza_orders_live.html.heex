@@ -5,22 +5,34 @@
       <thead>
         <tr>
           <th class="id">
-            #
+            <.link_sort sort_by={:id} options={@options}>
+              #
+            </.link_sort>
           </th>
           <th>
-            Size
+            <.link_sort sort_by={:size} options={@options}>
+              Size
+            </.link_sort>
           </th>
           <th>
-            Style
+            <.link_sort sort_by={:Style} options={@options}>
+              Style
+            </.link_sort>
           </th>
           <th>
-            Topping 1
+            <.link_sort sort_by={:topping_1} options={@options}>
+              Toppin 1
+            </.link_sort>
           </th>
           <th>
-            Topping 2
+            <.link_sort sort_by={:topping_2} options={@options}>
+              Toppin 2
+            </.link_sort>
           </th>
           <th>
-            Price
+            <.link_sort sort_by={:price} options={@options}>
+              Price
+            </.link_sort>
           </th>
         </tr>
       </thead>
