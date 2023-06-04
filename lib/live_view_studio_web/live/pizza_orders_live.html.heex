@@ -1,7 +1,16 @@
 <h1>Pizza Orders</h1>
-<div id="pizza-orders">
-  <div class="wrapper">
-    <table>
+<div id="pizza-orders" class="overflow-x-auto">
+  <form phx-change="select-per-page">
+    <select name="per-page">
+      <%= Phoenix.HTML.Form.options_for_select(
+        [5,10,15,20],
+        @options.per_page
+      ) %>
+    </select>
+    <label for="per-page">per page</label>
+  </form>
+  <div class="wrapper min-w-full">
+    <table class="table-auto">
       <thead>
         <tr>
           <th class="id">
@@ -59,5 +68,15 @@
         </tr>
       </tbody>
     </table>
+    <div class="footer">
+      <div class="pagination">
+        <.move_page_down options={@options}>
+          Previous
+        </.move_page_down>
+        <.move_page_up options={@options} donation_count={@donation_count}>
+          Next
+        </.move_page_up>
+      </div>
+    </div>
   </div>
 </div>

@@ -18,7 +18,7 @@ defmodule LiveViewStudio.PizzaOrders do
 
   """
   def list_pizza_orders do
-    Repo.all(from o in PizzaOrder, order_by: [asc: o.id])
+    Repo.all(from(o in PizzaOrder, order_by: [asc: o.id]))
   end
 
   @doc """
@@ -130,5 +130,18 @@ defmodule LiveViewStudio.PizzaOrders do
   """
   def change_pizza_order(%PizzaOrder{} = pizza_order, attrs \\ %{}) do
     PizzaOrder.changeset(pizza_order, attrs)
+  end
+
+  @doc """
+  Returns the total number of pizza orders.
+
+  ## Examples
+
+      iex> count_pizza_orders()
+      100
+
+  """
+  def count_pizza_orders do
+    Repo.aggregate(PizzaOrder, :count, :id)
   end
 end
