@@ -32,13 +32,71 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
        socket,
        options: options,
        pizza_orders: PizzaOrders.list_pizza_orders(options),
-       donation_count: PizzaOrders.count_pizza_orders()
+       pizza_count: PizzaOrders.count_pizza_orders()
      )}
   end
 
   def handle_event("select-per-page", %{"per-page" => per_page}, socket) do
     params = %{socket.assigns.options | per_page: per_page}
     socket = push_patch(socket, to: ~p"/pizza-orders?#{params}")
+    {:noreply, socket}
+  end
+
+  def handle_event("create-pizza", _, socket) do
+    # randomly create pizza object
+    size_list = ["Personal", "Family", "Small", "Large", "Medium", "Extra-Large"]
+
+    style_list = [
+      "Deep Fried Pizza	",
+      "Flatbread",
+      "Fugazza",
+      "Pizza Rustica",
+      "Thin Crust",
+      "Wood Fired",
+      "Pizza Bread",
+      "Gluten-Free Quinoa",
+      "Sicilian Style",
+      "	Neapolitan",
+      "Hand Tossed",
+      "Detroit-style",
+      "Tomato Pie",
+      "Greek"
+    ]
+
+    topping_list = [
+      "Peppers 🌶",
+      "Bacon 🥓",
+      "Tomatoes 🍅",
+      "Mushrooms 🍄",
+      "Garlic 🧄",
+      "Onions 🧅",
+      "Salmon 🐠",
+      "Eggplants 🍆",
+      "Shrimp 🍤",
+      "Basil 🌿",
+      "Broccoli 🥦",
+      "Pineapples 🍍"
+    ]
+
+    size = Enum.random(size_list)
+    style = Enum.random(style_list)
+    topping_1 = Enum.random(topping_list)
+    topping_2 = Enum.random(topping_list)
+    price = Float.round(100 * :random.uniform(), 2)
+
+    # try create 1 pizza object first
+    {_, new_pizza} =
+      PizzaOrders.create_pizza_order(%{
+        size: size,
+        style: style,
+        topping_1: topping_1,
+        topping_2: topping_2,
+        price: price
+      })
+
+    pizza_orders = PizzaOrders.list_pizza_orders(socket.assigns.options)
+
+    socket = assign(socket, pizza_orders: pizza_orders)
     {:noreply, socket}
   end
 
@@ -57,7 +115,7 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
   def move_page_up(assigns) do
     ~H"""
     <.link
-    :if={more_pages?(@options, @donation_count)}
+    :if={more_pages?(@options, @pizza_count)}
       patch={
         ~p"/pizza-orders?#{%{@options | page: @options.page + 1}}"
         }
@@ -126,8 +184,7 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
     end
   end
 
-  defp more_pages?(options, donation_count) do
-    IO.inspect(donation_count)
-    options.page * options.per_page < donation_count
+  defp more_pages?(options, pizza_count) do
+    options.page * options.per_page < pizza_count
   end
 end
