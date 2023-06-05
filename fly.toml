@@ -1,8 +1,9 @@
-# fly.toml file generated for newprag on 2023-02-15T11:06:28-08:00
+# fly.toml file generated for newprag on 2023-06-04T22:31:09-07:00
 
 app = "newprag"
 kill_signal = "SIGTERM"
 kill_timeout = 5
+primary_region = "sjc"
 processes = []
 
 [deploy]
