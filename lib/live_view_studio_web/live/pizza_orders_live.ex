@@ -100,6 +100,22 @@ defmodule LiveViewStudioWeb.PizzaOrdersLive do
     {:noreply, socket}
   end
 
+  def handle_event("delete_pizza", %{"id" => order_id}, socket) do
+    case PizzaOrders.get_pizza_order!(order_id) do
+      %{} = pizza_order ->
+        PizzaOrders.delete_pizza_order(pizza_order)
+
+      _ ->
+        {:error, "Pizza order not found"}
+    end
+
+    IO.inspect(socket.assigns)
+    pizza_orders = PizzaOrders.list_pizza_orders(socket.assigns.options)
+
+    socket = assign(socket, pizza_orders: pizza_orders)
+    {:noreply, socket}
+  end
+
   defp link_sort(assigns) do
     ~H"""
       <.link patch={~p"/pizza-orders?#{%{@options | sort_by: @sort_by, sort_order: next_sort_order(@options.sort_order)}}"}>

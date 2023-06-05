@@ -65,6 +65,11 @@
           <td class="price">
             <%= number_to_currency(order.price) %>
           </td>
+          <td class="bg-slate-200">
+            <button class="bg-orange-700 rounded" phx-click="delete_pizza" phx-value-id={order.id}>
+              ✖
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
