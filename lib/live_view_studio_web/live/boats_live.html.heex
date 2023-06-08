@@ -1,0 +1,24 @@
+<h1>Daily Boat Rentals</h1>
+
+    <.promo expiration={2} minutes={1222}>
+      Save 25% on rentals!
+      <:legal>
+        <Heroicons.exclamation_circle /> Limit 1 per party
+      </:legal>
+    </.promo>
+
+    <.badge label="edited" class="bg-blue-300 font-bold" />
+
+    <div id="boats">
+      <.filter_form filter={@filter} />
+      <div class="boats">
+        <.display_boats :for={boat <- @boats} boat={boat} />
+      </div>
+
+      <.promo expiration={1}>
+        Hurry, only 3 boats left!
+        <:legal>
+          Excluding weekends!
+        </:legal>
+      </.promo>
+    </div>

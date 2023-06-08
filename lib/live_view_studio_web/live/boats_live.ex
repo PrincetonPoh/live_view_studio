@@ -13,35 +13,6 @@ defmodule LiveViewStudioWeb.BoatsLive do
     {:ok, socket, temporary_assigns: [boats: []]}
   end
 
-  def render(assigns) do
-    ~H"""
-    <h1>Daily Boat Rentals</h1>
-
-    <.promo expiration={2} minutes={1222}>
-      Save 25% on rentals!
-      <:legal>
-        <Heroicons.exclamation_circle /> Limit 1 per party
-      </:legal>
-    </.promo>
-
-    <.badge label="edited" class="bg-blue-300 font-bold" />
-
-    <div id="boats">
-      <.filter_form filter={@filter} />
-      <div class="boats">
-        <.display_boats :for={boat <- @boats} boat={boat} />
-      </div>
-
-      <.promo expiration={1}>
-        Hurry, only 3 boats left!
-        <:legal>
-          Excluding weekends!
-        </:legal>
-      </.promo>
-    </div>
-    """
-  end
-
   attr(:filter, :map, required: true)
 
   def filter_form(assigns) do
@@ -105,14 +76,24 @@ defmodule LiveViewStudioWeb.BoatsLive do
   end
 
   def handle_event("filter", %{"type" => type, "prices" => prices}, socket) do
+    IO.inspect(type)
+    IO.inspect(prices)
+
     filter = %{type: type, prices: prices}
-    boats = Boats.list_boats(filter)
-    socket = assign(socket, boats: boats, filter: filter)
-    {:noreply, socket}
+
+    {:noreply, push_patch(socket, to: ~p"/boats?#{filter}")}
   end
 
   def handle_params(params, _url, socket) do
     IO.inspect(params["sort_by"])
+
+    filter = %{
+      type: params["type"] || "",
+      prices: params["prices"] || [""]
+    }
+
+    boats = Boats.list_boats(filter)
+    socket = assign(socket, boats: boats, filter: filter)
 
     {:noreply, socket}
   end
