@@ -81,6 +81,13 @@
         <.move_page_down options={@options}>
           Previous
         </.move_page_down>
+        <.link
+          :for={{page_number, current_page?} <- pages(@options, @pizza_count)}
+          class={if current_page?, do: "active"}
+          patch={~p"/pizza-orders?#{%{@options | page: page_number}}"}
+        >
+          <%= page_number %>
+        </.link>
         <.move_page_up options={@options} pizza_count={@pizza_count}>
           Next
         </.move_page_up>
