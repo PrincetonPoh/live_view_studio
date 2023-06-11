@@ -2,14 +2,18 @@ defmodule LiveViewStudioWeb.ServersLive do
   use LiveViewStudioWeb, :live_view
 
   alias LiveViewStudio.Servers
+  alias LiveViewStudio.Servers.Server
 
   def mount(_params, _session, socket) do
     servers = Servers.list_servers()
 
+    changeset = Servers.change_server(%Server{})
+
     socket =
       assign(socket,
         servers: servers,
-        coffees: 0
+        coffees: 0,
+        form: to_form(changeset)
       )
 
     {:ok, socket}
@@ -53,8 +57,65 @@ defmodule LiveViewStudioWeb.ServersLive do
           </button>
         </div>
       </div>
-      <.server selected_server={@selected_server} />
+      <div class="main">
+        <div class="wrapper">
+          <.form for={@form} phx-submit="save">
+            <div class="field">
+              <.input field={@form[:name]} placeholder="Name" />
+            </div>
+            <div class="field">
+              <.input field={@form[:framework]} placeholder="Framework" />
+            </div>
+            <div class="field">
+              <.input
+                field={@form[:size]}
+                placeholder="Size (MB)"
+                type="number"
+              />
+            </div>
+            <.button phx-disable-with="Saving...">
+              Save
+            </.button>
+          </.form>
+          <.server selected_server={@selected_server} />
+        </div>
+      </div>
     </div>
+    """
+  end
+
+  attr(:selected_server, LiveViewStudio.Servers.Server, required: true)
+
+  def server(assigns) do
+    ~H"""
+      <div class="server">
+        <div class="header">
+          <h2><%= @selected_server.name %></h2>
+          <span class={@selected_server.status}>
+            <%= @selected_server.status %>
+          </span>
+        </div>
+        <div class="body">
+          <div class="row">
+            <span>
+              <%= @selected_server.deploy_count %> deploys
+            </span>
+            <span>
+              <%= @selected_server.size %> MB
+            </span>
+            <span>
+              <%= @selected_server.framework %>
+            </span>
+          </div>
+          <h3>Last Commit Message:</h3>
+          <blockquote>
+            <%= @selected_server.last_commit_message %>
+          </blockquote>
+        </div>
+      </div>
+      <div class="links">
+        <.link navigate={~p"/light"}>Adjust light</.link>
+      </div>
     """
   end
 
@@ -62,42 +123,23 @@ defmodule LiveViewStudioWeb.ServersLive do
     {:noreply, update(socket, :coffees, &(&1 + 1))}
   end
 
-  attr :selected_server, LiveViewStudio.Servers.Server, required: true
+  def handle_event("save", %{"server" => server_params}, socket) do
+    case Servers.create_server(server_params) do
+      {:ok, server} ->
+        socket =
+          update(
+            socket,
+            :servers,
+            fn servers -> [server | servers] end
+          )
 
-  def server(assigns) do
-    ~H"""
-    <div class="main">
-      <div class="wrapper">
-        <div class="server">
-          <div class="header">
-            <h2><%= @selected_server.name %></h2>
-            <span class={@selected_server.status}>
-              <%= @selected_server.status %>
-            </span>
-          </div>
-          <div class="body">
-            <div class="row">
-              <span>
-                <%= @selected_server.deploy_count %> deploys
-              </span>
-              <span>
-                <%= @selected_server.size %> MB
-              </span>
-              <span>
-                <%= @selected_server.framework %>
-              </span>
-            </div>
-            <h3>Last Commit Message:</h3>
-            <blockquote>
-              <%= @selected_server.last_commit_message %>
-            </blockquote>
-          </div>
-        </div>
-        <div class="links">
-          <.link navigate={~p"/light"}>Adjust light</.link>
-        </div>
-      </div>
-    </div>
-    """
+        socket = put_flash(socket, :info, "Server successfully created!")
+        changeset = Servers.change_server(%Server{})
+        {:noreply, assign(socket, :form, to_form(changeset))}
+
+      {:error, changeset} ->
+        socket = put_flash(socket, :error, "Failed to save!")
+        {:noreply, assign(socket, :form, to_form(changeset))}
+    end
   end
 end
