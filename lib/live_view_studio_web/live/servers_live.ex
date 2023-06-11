@@ -24,13 +24,16 @@ defmodule LiveViewStudioWeb.ServersLive do
   end
 
   def handle_params(_, _url, socket) do
-    IO.inspect(hd(socket.assigns.servers), label: "SERVER")
-    IO.inspect(3)
+    case socket.assigns.live_action == :new do
+      true ->
+        {:noreply, assign(socket, selected_server: nil)}
 
-    {:noreply,
-     assign(socket,
-       selected_server: hd(socket.assigns.servers)
-     )}
+      _ ->
+        {:noreply,
+         assign(socket,
+           selected_server: hd(socket.assigns.servers)
+         )}
+    end
   end
 
   def render(assigns) do
@@ -41,6 +44,9 @@ defmodule LiveViewStudioWeb.ServersLive do
     <div id="servers">
       <div class="sidebar">
         <div class="nav">
+          <.link patch={~p"/servers/new"} class="add">
+            + Add New Server
+          </.link>
           <.link
             :for={server <- @servers}
             patch={~p"/servers/#{server}"}
@@ -59,25 +65,11 @@ defmodule LiveViewStudioWeb.ServersLive do
       </div>
       <div class="main">
         <div class="wrapper">
-          <.form for={@form} phx-submit="save">
-            <div class="field">
-              <.input field={@form[:name]} placeholder="Name" />
-            </div>
-            <div class="field">
-              <.input field={@form[:framework]} placeholder="Framework" />
-            </div>
-            <div class="field">
-              <.input
-                field={@form[:size]}
-                placeholder="Size (MB)"
-                type="number"
-              />
-            </div>
-            <.button phx-disable-with="Saving...">
-              Save
-            </.button>
-          </.form>
-          <.server selected_server={@selected_server} />
+          <%= if @live_action == :new do %>
+            <.new_server form={@form} />
+          <%= else %>
+            <.server selected_server={@selected_server} />
+          <%= end %>
         </div>
       </div>
     </div>
@@ -116,6 +108,37 @@ defmodule LiveViewStudioWeb.ServersLive do
       <div class="links">
         <.link navigate={~p"/light"}>Adjust light</.link>
       </div>
+      <br>
+      <br>
+      <br>
+    """
+  end
+
+  attr(:form, Phoenix.HTML.Form, required: true)
+
+  def new_server(assigns) do
+    ~H"""
+      <.form for={@form} phx-submit="save">
+        <div class="field">
+          <.input field={@form[:name]} placeholder="Name" />
+        </div>
+        <div class="field">
+          <.input field={@form[:framework]} placeholder="Framework" />
+        </div>
+        <div class="field">
+          <.input
+            field={@form[:size]}
+            placeholder="Size (MB)"
+            type="number"
+          />
+        </div>
+        <.button phx-disable-with="Saving...">
+          Save
+        </.button>
+        <.link patch={~p"/servers"} class="cancel">
+          Cancel
+        </.link>
+      </.form>
     """
   end
 
@@ -135,7 +158,8 @@ defmodule LiveViewStudioWeb.ServersLive do
 
         socket = put_flash(socket, :info, "Server successfully created!")
         changeset = Servers.change_server(%Server{})
-        {:noreply, assign(socket, :form, to_form(changeset))}
+        socket = assign(socket, :form, to_form(changeset))
+        {:noreply, push_patch(socket, to: ~p"/servers/#{server.id}")}
 
       {:error, changeset} ->
         socket = put_flash(socket, :error, "Failed to save!")
