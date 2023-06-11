@@ -44,7 +44,7 @@ defmodule LiveViewStudioWeb.VolunteersLive do
           <div class="phone">
             <%= volunteer.phone %>
           </div>
-          <div class="status">
+          <div class="status" phx-click="toggle_state" phx-value-id={volunteer.id}>
             <button>
               <%= if volunteer.checked_out, do: "Check In", else: "Check Out" %>
             </button>
@@ -80,5 +80,13 @@ defmodule LiveViewStudioWeb.VolunteersLive do
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :form, to_form(changeset))}
+  end
+
+  def handle_event("toggle_state", %{"id" => id}, socket) do
+    volunteer = Volunteers.get_volunteer!(id)
+
+    {:ok, updated_volunteer} = Volunteers.toggle_status_volunteer(volunteer)
+
+    {:noreply, stream_insert(socket, :volunteers, updated_volunteer)}
   end
 end
