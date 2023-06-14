@@ -67,9 +67,9 @@ defmodule LiveViewStudioWeb.ServersLive do
         <div class="wrapper">
           <%= if @live_action == :new do %>
             <.new_server form={@form} />
-          <%= else %>
+          <% else %>
             <.server selected_server={@selected_server} />
-          <%= end %>
+          <% end %>
         </div>
       </div>
     </div>
@@ -80,37 +80,41 @@ defmodule LiveViewStudioWeb.ServersLive do
 
   def server(assigns) do
     ~H"""
-      <div class="server">
-        <div class="header">
-          <h2><%= @selected_server.name %></h2>
-          <span class={@selected_server.status}>
-            <%= @selected_server.status %>
+    <div class="server">
+      <div class="header">
+        <h2><%= @selected_server.name %></h2>
+        <button
+          phx-click="toggle-status"
+          phx-value-id={@selected_server.id}
+          class={@selected_server.status}
+        >
+          <%= @selected_server.status %>
+        </button>
+      </div>
+      <div class="body">
+        <div class="row">
+          <span>
+            <%= @selected_server.deploy_count %> deploys
+          </span>
+          <span>
+            <%= @selected_server.size %> MB
+          </span>
+          <span>
+            <%= @selected_server.framework %>
           </span>
         </div>
-        <div class="body">
-          <div class="row">
-            <span>
-              <%= @selected_server.deploy_count %> deploys
-            </span>
-            <span>
-              <%= @selected_server.size %> MB
-            </span>
-            <span>
-              <%= @selected_server.framework %>
-            </span>
-          </div>
-          <h3>Last Commit Message:</h3>
-          <blockquote>
-            <%= @selected_server.last_commit_message %>
-          </blockquote>
-        </div>
+        <h3>Last Commit Message:</h3>
+        <blockquote>
+          <%= @selected_server.last_commit_message %>
+        </blockquote>
       </div>
-      <div class="links">
-        <.link navigate={~p"/light"}>Adjust light</.link>
-      </div>
-      <br>
-      <br>
-      <br>
+    </div>
+    <div class="links">
+      <.link navigate={~p"/light"}>Adjust light</.link>
+    </div>
+    <br />
+    <br />
+    <br />
     """
   end
 
@@ -118,28 +122,32 @@ defmodule LiveViewStudioWeb.ServersLive do
 
   def new_server(assigns) do
     ~H"""
-      <.form for={@form} phx-submit="save" phx-change="validate">
-        <div class="field">
-          <.input field={@form[:name]} placeholder="Name" phx-debounce="2000"/>
-        </div>
-        <div class="field">
-          <.input field={@form[:framework]} placeholder="Framework" phx-debounce="2000"/>
-        </div>
-        <div class="field">
-          <.input
-            field={@form[:size]}
-            placeholder="Size (MB)"
-            type="number"
-            phx-debounce="2000"
-          />
-        </div>
-        <.button phx-disable-with="Saving...">
-          Save
-        </.button>
-        <.link patch={~p"/servers"} class="cancel">
-          Cancel
-        </.link>
-      </.form>
+    <.form for={@form} phx-submit="save" phx-change="validate">
+      <div class="field">
+        <.input field={@form[:name]} placeholder="Name" phx-debounce="2000" />
+      </div>
+      <div class="field">
+        <.input
+          field={@form[:framework]}
+          placeholder="Framework"
+          phx-debounce="2000"
+        />
+      </div>
+      <div class="field">
+        <.input
+          field={@form[:size]}
+          placeholder="Size (MB)"
+          type="number"
+          phx-debounce="2000"
+        />
+      </div>
+      <.button phx-disable-with="Saving...">
+        Save
+      </.button>
+      <.link patch={~p"/servers"} class="cancel">
+        Cancel
+      </.link>
+    </.form>
     """
   end
 
@@ -175,5 +183,30 @@ defmodule LiveViewStudioWeb.ServersLive do
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :form, to_form(changeset))}
+  end
+
+  def handle_event("toggle-status", %{"id" => server_id}, socket) do
+    # update database
+    server = Servers.get_server!(String.to_integer(server_id))
+    {:ok, updated_server} = Servers.update_server(server, %{status: toggle_status(server.status)})
+
+    # update sidebar
+    updated_servers =
+      Enum.map(socket.assigns.servers, fn s ->
+        if s.id == server.id, do: updated_server, else: s
+      end)
+
+    {:noreply,
+     assign(socket,
+       selected_server: updated_server,
+       servers: updated_servers
+     )}
+  end
+
+  defp toggle_status(old_status) do
+    case old_status do
+      "up" -> "down"
+      "down" -> "up"
+    end
   end
 end
