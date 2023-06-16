@@ -3,45 +3,52 @@ defmodule LiveViewStudioWeb.VolunteersLive do
 
   alias LiveViewStudio.Volunteers
   alias LiveViewStudio.Volunteers.Volunteer
+  alias LiveViewStudioWeb.VolunteerFormComponent
 
   def mount(_params, _session, socket) do
     volunteers = Volunteers.list_volunteers()
 
-    changeset = Volunteers.change_volunteer(%Volunteer{})
-
     socket =
       socket
       |> stream(:volunteers, volunteers)
-      |> assign(form: to_form(changeset))
+      |> assign(:count, length(volunteers))
 
     {:ok, socket}
   end
 
-  def handle_event("save", %{"volunteer" => volunteer_params}, socket) do
-    IO.inspect(volunteer_params)
-
-    case Volunteers.create_volunteer(volunteer_params) do
-      {:ok, volunteer} ->
-        socket = stream_insert(socket, :volunteers, volunteer, at: 0)
-
-        socket = put_flash(socket, :info, "Volunteer successfully checked in!")
-
-        changeset = Volunteers.change_volunteer(%Volunteer{})
-        {:noreply, assign(socket, :form, to_form(changeset))}
-
-      {:error, changeset} ->
-        socket = put_flash(socket, :error, "Check in failure!")
-        {:noreply, assign(socket, :form, to_form(changeset))}
-    end
-  end
-
-  def handle_event("validate", %{"volunteer" => volunteer_params}, socket) do
-    changeset =
-      %Volunteer{}
-      |> Volunteers.change_volunteer(volunteer_params)
-      |> Map.put(:action, :validate)
-
-    {:noreply, assign(socket, :form, to_form(changeset))}
+  def volunteer(assigns) do
+    ~H"""
+    <div
+      class={"volunteer #{if @volunteer.checked_out, do: "out"}"}
+      id={@id}
+    >
+      <div class="name">
+        <%= @volunteer.name %>
+      </div>
+      <div class="phone">
+        <%= @volunteer.phone %>
+      </div>
+      <div
+        class="status"
+        phx-click="toggle_state"
+        phx-value-id={@volunteer.id}
+      >
+        <button>
+          <%= if @volunteer.checked_out,
+            do: "Check In",
+            else: "Check Out" %>
+        </button>
+      </div>
+      <.link
+        class="delete"
+        phx-click="delete"
+        phx-value-id={@volunteer.id}
+        data-confirm="Are you sure?"
+      >
+        <Heroicons.trash mini class="w-4 h-4" />
+      </.link>
+    </div>
+    """
   end
 
   def handle_event("toggle_state", %{"id" => id}, socket) do
@@ -54,8 +61,15 @@ defmodule LiveViewStudioWeb.VolunteersLive do
 
   def handle_event("delete", %{"id" => id}, socket) do
     volunteer = Volunteers.get_volunteer!(id)
+    socket = update(socket, :count, &(&1 - 1))
+
     {:ok, _} = Volunteers.delete_volunteer(volunteer)
 
     {:noreply, stream_delete(socket, :volunteers, volunteer)}
+  end
+
+  def handle_info({VolunteerFormComponent, :volunteer_created, volunteer}, socket) do
+    socket = update(socket, :count, &(&1 + 1))
+    {:noreply, stream_insert(socket, :volunteers, volunteer, at: 0)}
   end
 end
