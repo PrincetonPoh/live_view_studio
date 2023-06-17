@@ -22,9 +22,15 @@ defmodule LiveViewStudioWeb.VolunteerFormComponent do
   def render(assigns) do
     ~H"""
     <div>
-    <div class="count">
-    Go for it! You'll be volunteer #<%= @count %></div>
-      <.form for={@form} phx-submit="save" phx-change="validate" phx-target={@myself} >
+      <div class="count">
+        Go for it! You'll be volunteer #<%= @count %>
+      </div>
+      <.form
+        for={@form}
+        phx-submit="save"
+        phx-change="validate"
+        phx-target={@myself}
+      >
         <.input
           field={@form[:name]}
           placeholder="Name"
@@ -47,12 +53,8 @@ defmodule LiveViewStudioWeb.VolunteerFormComponent do
   end
 
   def handle_event("save", %{"volunteer" => volunteer_params}, socket) do
-    IO.inspect(volunteer_params)
-
     case Volunteers.create_volunteer(volunteer_params) do
-      {:ok, volunteer} ->
-        send(self(), {__MODULE__, :volunteer_created, volunteer})
-
+      {:ok, _volunteer} ->
         socket = put_flash(socket, :info, "Volunteer successfully checked in!")
 
         changeset = Volunteers.change_volunteer(%Volunteer{})
