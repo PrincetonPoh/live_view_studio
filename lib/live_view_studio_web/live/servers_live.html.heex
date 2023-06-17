@@ -1,0 +1,36 @@
+<h1>Servers</h1>
+<div id="servers">
+  <div class="sidebar">
+    <div class="nav">
+      <.link patch={~p"/servers/new"} class="add">
+        + Add New Server
+      </.link>
+      <.link
+        :for={server <- @servers}
+        patch={~p"/servers/#{server}"}
+        class={if server == @selected_server, do: "selected"}
+      >
+        <span class={server.status}></span>
+        <%= server.name %>
+      </.link>
+    </div>
+    <div class="coffees">
+      <button phx-click="drink">
+        <img src="/images/coffee.svg" />
+        <%= @coffees %>
+      </button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="wrapper">
+      <%= if @live_action == :new do %>
+        <.live_component module={ServerFormComponent} id={:new} />
+      <% else %>
+        <.server selected_server={@selected_server} />
+      <% end %>
+    </div>
+  </div>
+</div>
+<br />
+<br />
+<br />
