@@ -20,7 +20,7 @@ defmodule LiveViewStudio.Servers do
     {:ok, volunteer}
   end
 
-  def broadcast({:error, _changeset} = error, tag), do: error
+  def broadcast({:error, _changeset} = error, _tag), do: error
 
   @doc """
   Returns the list of servers.
