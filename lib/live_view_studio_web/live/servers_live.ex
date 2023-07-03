@@ -94,7 +94,7 @@ defmodule LiveViewStudioWeb.ServersLive do
      )}
   end
 
-  def handle_info({ServerFormComponent, :server_created, server}, socket) do
+  def handle_info({:server_created, server}, socket) do
     socket =
       update(
         socket,
@@ -102,7 +102,7 @@ defmodule LiveViewStudioWeb.ServersLive do
         fn servers -> [server | servers] end
       )
 
-    {:noreply, push_patch(socket, to: ~p"/servers/#{server.id}")}
+    {:noreply, socket}
   end
 
   def handle_info({:toggle_status, updated_server}, socket) do
