@@ -2,7 +2,11 @@
 <.flash_group flash={@flash} />
 
 <div id="volunteer-checkin">
-  <.live_component module={VolunteerFormComponent} id={:new} count={@count} />
+  <.live_component
+    module={VolunteerFormComponent}
+    id={:new}
+    count={@count}
+  />
 
   <div id="volunteers" phx-update="stream">
     <.volunteer
