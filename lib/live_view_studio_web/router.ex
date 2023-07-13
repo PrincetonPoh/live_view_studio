@@ -39,6 +39,7 @@ defmodule LiveViewStudioWeb.Router do
     live("/vehicles", VehiclesLive)
     live("/athletes", AthletesLive)
     live("/pizza-orders", PizzaOrdersLive)
+    live("/tailwind", TailwindLive)
   end
 
   # Other scopes may use custom stacks.
